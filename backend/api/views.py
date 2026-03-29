@@ -11,6 +11,7 @@ from .utils import ensure_monthly_dues_created
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
+def dashboard_stats(request):
     ensure_monthly_dues_created()
     
     # Otomatik Hatırlatıcı: Günlük ilk girişte borçluları kontrol et (Robot simülasyonu)
