@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, CheckCircle2, XCircle, Search, Calendar, Loader2 } from 'lucide-react';
+import { CreditCard, CheckCircle2, XCircle, Search, Calendar, Loader2, MessageSquare } from 'lucide-react';
 import api from '../api';
 
 export default function DuesManagement() {
@@ -27,6 +27,21 @@ export default function DuesManagement() {
     }
   };
 
+
+  const handleWhatsAppReminder = (payment) => {
+    const phone = payment.phone_number || "";
+    const cleanPhone = phone.replace(/\D/g, '');
+    
+    if (!cleanPhone) {
+      alert("Bu daire için kayıtlı telefon numarası bulunamadı.");
+      return;
+    }
+
+    const message = `Merhaba, Kardeşler Apartmanı Daire ${payment.apartment_number} için ₺${payment.amount.toLocaleString('tr-TR')} tutarındaki aidat ödemeniz beklenmektedir. İyi günler dileriz.`;
+    const wpUrl = `https://wa.me/${cleanPhone.startsWith('90') || cleanPhone.length > 10 ? cleanPhone : '90' + cleanPhone}?text=${encodeURIComponent(message)}`;
+    
+    window.open(wpUrl, '_blank');
+  };
 
   const togglePaymentStatus = async (id) => {
     try {
@@ -137,20 +152,27 @@ export default function DuesManagement() {
                       </div>
                     </div>
                     
-                    <button
-                      onClick={() => togglePaymentStatus(p.id)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-lg ${
-                        p.is_paid 
-                        ? 'bg-emerald-600/10 text-emerald-500 hover:bg-red-500/10 hover:text-red-500' 
-                        : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-emerald-600/20'
-                      }`}
-                    >
-                      {p.is_paid ? (
-                        <>İptal Et</>
-                      ) : (
-                        <>Ödendi İşaretle</>
+                    <div className="flex items-center gap-2">
+                      {!p.is_paid && (
+                        <button
+                          onClick={() => handleWhatsAppReminder(p)}
+                          className="p-2 rounded-xl text-emerald-500 hover:bg-emerald-500/10 transition-all border border-emerald-500/20"
+                          title="WhatsApp Hatırlatması Gönder"
+                        >
+                          <MessageSquare size={18} />
+                        </button>
                       )}
-                    </button>
+                      <button
+                        onClick={() => togglePaymentStatus(p.id)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-lg ${
+                          p.is_paid 
+                          ? 'bg-emerald-600/10 text-emerald-500 hover:bg-red-500/10 hover:text-red-500' 
+                          : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-emerald-600/20'
+                        }`}
+                      >
+                        {p.is_paid ? 'İptal Et' : 'Ödendi İşaretle'}
+                      </button>
+                    </div>
                   </div>
                   {p.is_paid && (
                     <div className="mt-3 flex items-center gap-2 text-[10px] text-gray-500 bg-dark/30 p-2 rounded-lg">

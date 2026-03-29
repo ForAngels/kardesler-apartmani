@@ -11,9 +11,17 @@ from .utils import ensure_monthly_dues_created
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def dashboard_stats(request):
-    # Düşük maliyetli otomasyon: Her dashboard girişinde eksik aidatları oluştur
     ensure_monthly_dues_created()
+    
+    # Otomatik Hatırlatıcı: Günlük ilk girişte borçluları kontrol et (Robot simülasyonu)
+    from django.core.management import call_command
+    from django.utils import timezone
+    today = timezone.now().date()
+    if not NotificationLog.objects.filter(sent_at__date=today, message_type='HATIRLATMA').exists():
+        try:
+            call_command('auto_remind')
+        except:
+            pass
     
     # Bu fonksiyon yöneticiler için genel istatistikleri verir
     total_paid = Payment.objects.filter(is_paid=True).aggregate(Sum('amount'))['amount__sum'] or 0
@@ -393,7 +401,8 @@ def list_monthly_dues_management(request):
             "amount": float(p.amount),
             "is_paid": p.is_paid,
             "paid_date": p.paid_date.strftime("%Y-%m-%d") if p.paid_date else None,
-            "due_date": p.due_date.strftime("%Y-%m-%d")
+            "due_date": p.due_date.strftime("%Y-%m-%d"),
+            "phone_number": p.apartment.phone_number
         })
     return Response(p_list)
 
