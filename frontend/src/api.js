@@ -5,6 +5,8 @@ import axios from 'axios';
 // Falls back to localhost for development
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
+console.log("Bağlanılan API Adresi:", API_BASE_URL);
+
 const api = axios.create({
   baseURL: API_BASE_URL,
 });
